@@ -1,9 +1,9 @@
 [![NPM](https://img.shields.io/npm/v/qwik-querysignal?color=blue)](https://www.npmjs.com/package/qwik-querysignal)
 [![MIT License](https://img.shields.io/github/license/rainxh11/qwik-querysignal.svg?color=cyan)](https://github.com/rainxh11/qwik-querysignal/blob/next/LICENSE)
 
-# qwik-querysignal for Qwik
+# qwik-querysignal for [Qwik](https://qwik.builder.io/) 
 
-Type-safe search params state manager for Qwik - Like `useSignal()`, but stored in the URL query string.
+Type-safe search params state manager for [Qwik](https://qwik.builder.io/) - Like `useSignal()`, but stored in the URL query string.
 This project was inspired by [nuqs](https://github.com/47ng/nuqs) library for Next.js
 
 ## Features
