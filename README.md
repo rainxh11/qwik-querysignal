@@ -158,3 +158,5 @@ const search = useQuerySignal("search", parseAsString(), {
   debounce: 500, // in millisecond
 })
 ```
+
+![Example](https://raw.githubusercontent.com/rainxh11/qwik-querysignal/main/assets/example_debounce.gif)
