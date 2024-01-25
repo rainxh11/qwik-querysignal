@@ -77,6 +77,8 @@ const search = useQueryStringSignal("search", "default", {
 const search = useQuerySignal("search", parseAsString("default"))
 ```
 
+![Example](https://raw.githubusercontent.com/rainxh11/qwik-querysignal/main/assets/example_string.gif)
+
 - Boolean:
 
 ```ts
