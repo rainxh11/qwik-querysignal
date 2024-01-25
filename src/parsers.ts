@@ -4,13 +4,15 @@ import {format, parse as parseDate} from "date-fns";
 export interface SearchParamSerializer<T> {
     serialize$: QRL<(value: T | undefined | null) => string | undefined | null>
     parse$: QRL<(stringValue: string | null) => T | undefined>
+    defaultValue?: T
 }
 
 
 export const parseAsString = (defaultValue?: string): SearchParamSerializer<string> => {
     return {
-        serialize$: $((v) => `${v ?? defaultValue}`),
-        parse$: $(v => v ?? defaultValue)
+        serialize$: $((v) => v ? v.toString() : defaultValue ? defaultValue.toString(): undefined),
+        parse$: $(v => v ?? defaultValue),
+        defaultValue: defaultValue
     }
 }
 
@@ -25,7 +27,8 @@ export const parseAsInteger = (defaultValue?: number): SearchParamSerializer<num
             const parsed = parseInt(v)
             if (Number.isNaN(parsed)) return defaultValue
             return parsed
-        })
+        }),
+        defaultValue: defaultValue
     }
 }
 
@@ -41,7 +44,8 @@ export const parseAsHex = (defaultValue?: number): SearchParamSerializer<number>
             const parsed = parseInt(v, 16)
             if (Number.isNaN(parsed)) return defaultValue
             return parsed
-        })
+        }),
+        defaultValue: defaultValue
     }
 }
 
@@ -61,13 +65,15 @@ export const parseAsFloat = (defaultValue?: number): SearchParamSerializer<numbe
             const parsed = parseFloat(v)
             if (Number.isNaN(parsed)) return defaultValue
             return parsed
-        })
+        }),
+        defaultValue: defaultValue
     }
 }
 export const parseAsBoolean = (defaultValue?: boolean): SearchParamSerializer<boolean> => {
     return {
         serialize$: $((v) => `${v ?? defaultValue}`),
-        parse$: $(v => v ? v === 'true' : (defaultValue ? defaultValue : undefined))
+        parse$: $(v => v ? v === 'true' : (defaultValue ? defaultValue : undefined)),
+        defaultValue: defaultValue
     }
 }
 
@@ -87,7 +93,8 @@ export const parseAsTimestamp = (defaultValue?: Date): SearchParamSerializer<Dat
                 if (Number.isNaN(ms)) return undefined
                 return new Date(ms)
             }
-        })
+        }),
+        defaultValue: defaultValue
     }
 }
 
@@ -107,7 +114,8 @@ export const parseAsIsoDateTime = (defaultValue?: Date): SearchParamSerializer<D
                 if (Number.isNaN(date.valueOf())) return undefined
                 return date
             }
-        })
+        }),
+        defaultValue: defaultValue
     }
 }
 
@@ -127,7 +135,8 @@ export const parseAsDateTimeFormatted = (dateFormat: string, defaultValue?: Date
                 if (Number.isNaN(date.valueOf())) return undefined
                 return date
             }
-        })
+        }),
+        defaultValue: defaultValue
     }
 }
 
@@ -148,7 +157,8 @@ export const parseAsStringEnum = <Enum extends string>(validEnums: Enum[], defau
                 if (validEnums.includes(parsedEnum)) return parsedEnum
                 return undefined
             }
-        })
+        }),
+        defaultValue: defaultValue
     }
 }
 
@@ -169,7 +179,8 @@ export const parseAsStringLiteral = <Literal extends string>(validLiterals: Lite
                 if (validLiterals.includes(parsedLiteral)) return parsedLiteral
                 return undefined
             }
-        })
+        }),
+        defaultValue: defaultValue
     }
 }
 
@@ -189,7 +200,8 @@ export const parseAsNumberLiteral = <Literal extends number>(validLiterals: Lite
                 if (validLiterals.includes(parsedLiteral)) return parsedLiteral
                 return undefined
             }
-        })
+        }),
+        defaultValue: defaultValue
     }
 }
 
@@ -210,6 +222,7 @@ export const parseAsJson = <T>(defaultValue?: T): SearchParamSerializer<T> => {
             } catch {
                 return undefined
             }
-        })
+        }),
+        defaultValue: defaultValue
     }
 }

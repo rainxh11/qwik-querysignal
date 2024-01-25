@@ -1,6 +1,7 @@
-import { Signal, useSignal, useTask$ } from "@builder.io/qwik"
-import { useLocation, useNavigate } from "@builder.io/qwik-city"
-import { type SearchParamSerializer, parseAsString } from "./parsers"
+import {Signal, useSignal, useTask$, useVisibleTask$} from "@builder.io/qwik"
+import {useLocation, useNavigate} from "@builder.io/qwik-city"
+import {parseAsString, type SearchParamSerializer} from "./parsers"
+
 export * from "./parsers"
 
 export type UseQuerySignalOptions = {
@@ -16,8 +17,8 @@ export interface ParserBuilderOptions<T> {
 }
 
 export function useSignalAndDebounced<T>(
-  debounce: number,
-  initialValue?: T,
+    debounce: number,
+    initialValue?: T,
 ): [
   nonDebounced: Signal<T | undefined>,
   debounced: Readonly<Signal<T | undefined>>,
@@ -29,8 +30,8 @@ export function useSignalAndDebounced<T>(
     if (debounce <= 0) debounced.value = state.value
     else {
       const timeout = setTimeout(
-        () => (debounced.value = state.value),
-        debounce,
+          () => (debounced.value = state.value),
+          debounce,
       )
       cleanup(() => clearTimeout(timeout))
     }
@@ -40,9 +41,9 @@ export function useSignalAndDebounced<T>(
 }
 
 export function useQuerySignal<T>(
-  queryKey: string,
-  serializer: SearchParamSerializer<T>,
-  options?: UseQuerySignalOptions,
+    queryKey: string,
+    serializer: SearchParamSerializer<T>,
+    options?: UseQuerySignalOptions,
 ) {
   if (!serializer) throw new Error(`Serializer not found!`)
 
@@ -50,20 +51,22 @@ export function useQuerySignal<T>(
   const navigate = useNavigate()
 
   const [param, debouncedParam] = useSignalAndDebounced<T | undefined>(
-    options?.debounce ?? 0,
+      options?.debounce ?? 0,
   )
 
-  useTask$(async () => {
-    param.value = await serializer.parse$(
-      location.url.searchParams.get(queryKey),
-    )
-    if (param.value && !location.url.searchParams.get(queryKey)) {
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async () => {
+    const queryValue = new URL(document.location.toString()).searchParams.get(queryKey)
+    if(queryValue) {
+      param.value = await serializer.parse$(queryValue)
+    }
+    if (!param.value && !queryValue && serializer.defaultValue) {
       const searchParams = location.url.searchParams
       const serialized = await serializer.serialize$(param.value)
-      if (serialized) searchParams.set(queryKey, serialized)
-      await navigate(
-        location.url.toString().split("?")[0] + "?" + searchParams.toString(),
-      )
+      if (serialized) {
+        searchParams.set(queryKey, serialized)
+        document.location = location.url.toString().split("?")[0] + "?" + searchParams.toString()
+      }
     }
   })
 
@@ -74,7 +77,7 @@ export function useQuerySignal<T>(
     if (serialized) searchParams.set(queryKey, serialized)
     else searchParams.delete(queryKey)
     const newUrl =
-      location.url.toString().split("?")[0] + "?" + searchParams.toString()
+        location.url.toString().split("?")[0] + "?" + searchParams.toString()
 
     await navigate(newUrl.replaceAll(/\?$/g, ""), {
       scroll: options?.scroll,
@@ -86,19 +89,19 @@ export function useQuerySignal<T>(
 }
 
 export function useQueryStringSignal(
-  queryKey: string,
-  defaultValue?: string,
-  options?: UseQuerySignalOptions,
+    queryKey: string,
+    defaultValue?: string,
+    options?: UseQuerySignalOptions,
 ) {
   return useQuerySignal<string>(queryKey, parseAsString(defaultValue), options)
 }
 
 export function useQueryArraySignal<T>(
-  queryKey: string,
-  separator: string,
-  itemSerializer: SearchParamSerializer<T>,
-  defaultValue?: T[],
-  options?: UseQuerySignalOptions,
+    queryKey: string,
+    separator: string,
+    itemSerializer: SearchParamSerializer<T>,
+    defaultValue?: T[],
+    options?: UseQuerySignalOptions,
 ) {
   if (!useQueryArraySignal) throw new Error(`Serializer not found!`)
 
@@ -106,36 +109,32 @@ export function useQueryArraySignal<T>(
   const navigate = useNavigate()
 
   const [param, debouncedParam] = useSignalAndDebounced<T[] | undefined>(
-    options?.debounce ?? 0,
-    defaultValue,
+      options?.debounce ?? 0,
+      defaultValue,
   )
-  useTask$(async () => {
-    const query = location.url.searchParams.get(queryKey)
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async () => {
+    const query = new URL(document.location.toString()).searchParams.get(queryKey)
     if (!query) param.value = defaultValue
     else {
       const parsedValues = await Promise.all(
-        query.split(separator).map(async (v: string) => {
-          return await itemSerializer.parse$(v)
-        }),
+          query.split(separator).map(async (v: string) => {
+            return await itemSerializer.parse$(v)
+          }),
       )
       param.value = parsedValues.filter(x => !!x) as T[]
     }
-    if (
-      param.value &&
-      param.value.length > 0 &&
-      !location.url.searchParams.get(queryKey)
-    ) {
+
+    if (param.value && !query && defaultValue) {
       const searchParams = location.url.searchParams
       const serializedValues = await Promise.all(
-        param.value.map(async v => {
-          return await itemSerializer.serialize$(v)
-        }),
+          param.value.map(async v => {
+            return await itemSerializer.serialize$(v)
+          }),
       )
       const serializedQuery = serializedValues.filter(x => !!x).join(separator)
       searchParams.set(queryKey, serializedQuery)
-      await navigate(
-        location.url.toString().split("?")[0] + "?" + searchParams.toString(),
-      )
+      document.location = location.url.toString().split("?")[0] + "?" + searchParams.toString()
     }
   })
 
@@ -147,9 +146,9 @@ export function useQueryArraySignal<T>(
 
     if (debouncedParam.value) {
       const serializedValues = await Promise.all(
-        debouncedParam.value.map(async v => {
-          return await itemSerializer.serialize$(v)
-        }),
+          debouncedParam.value.map(async v => {
+            return await itemSerializer.serialize$(v)
+          }),
       )
       serializedQuery = serializedValues.filter(x => !!x).join(separator)
     }
@@ -157,7 +156,7 @@ export function useQueryArraySignal<T>(
     if (serializedQuery.length > 0) searchParams.set(queryKey, serializedQuery)
     else searchParams.delete(queryKey)
     const newUrl =
-      location.url.toString().split("?")[0] + "?" + searchParams.toString()
+        location.url.toString().split("?")[0] + "?" + searchParams.toString()
     await navigate(newUrl.replaceAll(/\?$/g, ""), {
       scroll: options?.scroll,
       forceReload: options?.forceReload,
