@@ -22,15 +22,15 @@ it uses Qwik's builtin `useNavigation()` under the hood to navigate to the updat
 ## Installation
 
 ```shell
-pnpm add nuqs
+pnpm add qwik-querysignal
 ```
 
 ```shell
-yarn add nuqs
+yarn add qwik-querysignal
 ```
 
 ```shell
-npm install nuqs
+npm install qwik-querysignal
 ```
 
 # Example Usage:
