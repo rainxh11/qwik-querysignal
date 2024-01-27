@@ -1,7 +1,7 @@
 [![NPM](https://img.shields.io/npm/v/qwik-querysignal?color=blue)](https://www.npmjs.com/package/qwik-querysignal)
 [![MIT License](https://img.shields.io/github/license/rainxh11/qwik-querysignal.svg?color=cyan)](https://github.com/rainxh11/qwik-querysignal/blob/next/LICENSE)
 
-# qwik-querysignal for [Qwik](https://qwik.builder.io/) 
+# qwik-querysignal for [Qwik](https://qwik.builder.io/)
 
 Type-safe search params state manager for [Qwik](https://qwik.builder.io/) - Like `useSignal()`, but stored in the URL query string.
 This project was inspired by [nuqs](https://github.com/47ng/nuqs) library for Next.js
@@ -151,12 +151,16 @@ const search = useQuerySignal("search", parseAsString(), {
 
 ## Debouncing:
 
-`options` parameter can include an optional `debounce` field to delay navigation until _x milliseconds_ has passed from the last state change.
+`useQuerySignalDebounced` and `useQueryArraySignalDebounced`
+can be used to include debounce filter to delay navigation until _x milliseconds_ has passed from the last state change.
 
 ```ts
-const search = useQuerySignal("search", parseAsString(), {
-  debounce: 500, // in millisecond
-})
+import { useQuerySignalDebounced } from "qwik-querysignal"
+const [search, searchDebounced] = useQuerySignalDebounced(
+  "search",
+  parseAsString(),
+  500 /*in milliseconds*/,
+)
 ```
 
 ![Example](https://raw.githubusercontent.com/rainxh11/qwik-querysignal/main/assets/example_debounce.gif)
